@@ -99,7 +99,6 @@ function HomePage() {
       <Hero />
       <SearchSection />
       <Features />
-      <Features />
       <Testimonials />
       <CTA />
     </>

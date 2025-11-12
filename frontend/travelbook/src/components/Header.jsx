@@ -61,15 +61,7 @@ export default function Header() {
               <MapPin className="w-4 h-4" />
               Destinations
             </button>
-            {isAuthenticated && (
-              <button 
-                onClick={() => navigate('/travel-todo')}
-                className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1"
-              >
-                <ListTodo className="w-4 h-4" />
-                Ma Liste
-              </button>
-            )}
+        
           </nav>
 
           {/* Desktop Auth Buttons */}
