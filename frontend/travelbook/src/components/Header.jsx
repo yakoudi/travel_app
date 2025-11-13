@@ -61,7 +61,17 @@ export default function Header() {
               <MapPin className="w-4 h-4" />
               Destinations
             </button>
-        
+            {isAuthenticated && (
+              <>
+                <button 
+                  onClick={() => navigate('/my-bookings')}
+                  className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1"
+                >
+                  <ListTodo className="w-4 h-4" />
+                  Mes Réservations
+                </button>
+              </>
+            )}
           </nav>
 
           {/* Desktop Auth Buttons */}
@@ -105,7 +115,16 @@ export default function Header() {
                       <User className="w-4 h-4" />
                       Mon profil
                     </button>
-                    
+                    <button
+                      onClick={() => {
+                        navigate('/my-bookings');
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <ListTodo className="w-4 h-4" />
+                      Mes Réservations
+                    </button>
                     
                     {user?.role === 'admin' && (
                       <>
@@ -189,12 +208,12 @@ export default function Header() {
             {isAuthenticated && (
               <button 
                 onClick={() => {
-                  navigate('/travel-todo');
+                  navigate('/my-bookings');
                   setMobileMenuOpen(false);
                 }}
                 className="block w-full text-left text-gray-700 hover:text-blue-600"
               >
-                Ma Travel Todo
+                Mes Réservations
               </button>
             )}
             

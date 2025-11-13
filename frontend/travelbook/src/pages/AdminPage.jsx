@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Home, MapPin, Hotel, Plane, Package, Gift, Menu, X, LogOut } from 'lucide-react';
+import { Home, MapPin, Hotel, Plane, Package, Gift, Menu, X, LogOut, Calendar } from 'lucide-react';
 import Dashboard from '../components/admin/Dashboard';
 import DestinationList from '../components/admin/destinations/DestinationList';
 import HotelList from '../components/admin/hotels/HotelList';
 import FlightList from '../components/admin/flights/FlightList';
 import PackageList from '../components/admin/packages/PackageList';
 import PromotionList from '../components/admin/promotions/PromotionList';
+import AdminBookingsPage from '../components/admin/AdminBookingsPage';
 
 export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -13,6 +14,7 @@ export default function AdminPage() {
 
   const menuItems = [
     { id: 'dashboard', label: 'Tableau de bord', icon: Home },
+    { id: 'bookings', label: 'Réservations', icon: Calendar },
     { id: 'destinations', label: 'Destinations', icon: MapPin },
     { id: 'hotels', label: 'Hôtels', icon: Hotel },
     { id: 'flights', label: 'Vols', icon: Plane },
@@ -24,6 +26,8 @@ export default function AdminPage() {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
+      case 'bookings':
+        return <AdminBookingsPage />;
       case 'destinations':
         return <DestinationList />;
       case 'hotels':

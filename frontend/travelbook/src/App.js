@@ -24,6 +24,17 @@ import FlightDetailPage from './pages/FlightDetailPage';
 import PackageDetailPage from './pages/PackageDetailPage';
 import DestinationsPage from './pages/DestinationsPage';
 
+// Pages Réservation (Sprint 4)
+import BookingPage from './pages/BookingPage';
+import PaymentPage from './pages/PaymentPage';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
+
+
+// Pages Gestion Réservations (Sprint 5)
+import MyBookingsPage from './pages/MyBookingsPage';
+import BookingDetailPage from './pages/BookingDetailPage';
+
+
 import './App.css';
 
 // Composant pour protéger les routes
@@ -153,6 +164,51 @@ function AppRoutes() {
           <Route path="/hotels/:id" element={<HotelDetailPage />} />
           <Route path="/flights/:id" element={<FlightDetailPage />} />
           <Route path="/packages/:id" element={<PackageDetailPage />} />
+
+          {/* Page de test - Sprint 4 */}
+          {/* Routes Réservation - Sprint 4 */}
+          <Route
+            path="/booking/:type/:id"
+            element={
+              <ProtectedRoute>
+                <BookingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/:bookingId"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/booking-confirmation/:bookingId"
+            element={
+              <ProtectedRoute>
+                <BookingConfirmationPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Routes Gestion Réservations - Sprint 5 */}
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute>
+                <MyBookingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/booking-detail/:id"
+            element={
+              <ProtectedRoute>
+                <BookingDetailPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Routes Admin - Sprint 2 */}
           <Route

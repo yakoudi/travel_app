@@ -338,7 +338,10 @@ export default function FlightDetailPage() {
                 </div>
               </div>
 
-              <button className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg mb-4">
+              <button 
+                onClick={() => navigate(`/booking/flight/${flight.id}`)}
+                className="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg mb-4"
+              >
                 Réserver maintenant
               </button>
 

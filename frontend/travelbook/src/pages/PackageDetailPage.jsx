@@ -310,7 +310,10 @@ export default function PackageDetailPage() {
                 </div>
               </div>
 
-              <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all font-semibold text-lg mb-4 shadow-lg">
+              <button 
+                onClick={() => navigate(`/booking/package/${pkg.id}`)}
+                className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all font-semibold text-lg mb-4 shadow-lg"
+              >
                 Réserver ce circuit
               </button>
 
