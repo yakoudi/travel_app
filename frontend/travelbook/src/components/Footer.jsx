@@ -11,7 +11,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">✈</span>
               </div>
-              <span className="text-xl font-bold text-white">TravelBook</span>
+              <span className="text-xl font-bold text-white">Saferni</span>
             </div>
             <p className="text-sm text-gray-400">Votre partenaire de voyage de confiance depuis 2024.</p>
           </div>
@@ -37,13 +37,13 @@ export default function Footer() {
             <h3 className="font-bold text-white mb-4">Contact</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2"><Phone className="w-4 h-4" /><span>+33 1 23 45 67 89</span></li>
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /><span>info@travelbook.fr</span></li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /><span>info@Saferni.fr</span></li>
               <li className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-1" /><span>Paris, France</span></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-400">© 2025 TravelBook. Tous droits réservés.</p>
+          <p className="text-sm text-gray-400">© 2025 Saferni. Tous droits réservés.</p>
           <div className="flex gap-6 text-sm">
             <a href="#" className="hover:text-white transition">Politique de confidentialité</a>
             <a href="#" className="hover:text-white transition">Conditions d'utilisation</a>

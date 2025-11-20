@@ -30,6 +30,7 @@ INSTALLED_APPS = [
      'catalog',
     'django_filters',
     'bookings',
+    'chatbot',
    
    
 ]

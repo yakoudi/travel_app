@@ -53,7 +53,7 @@ const RegisterPage = () => {
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            ✈️ Travel Todo
+            ✈️ Saferni
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Créez votre compte

@@ -7,9 +7,11 @@ import Footer from './components/Footer';
 // Pages existantes
 import Hero from './components/Hero';
 import SearchSection from './components/SearchSection';
+
 import Features from './components/Features';
 import Testimonials from './components/Testimonials';
 import CTA from './components/CTA';
+import Chatbot from './components/Chatbot';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
@@ -29,11 +31,9 @@ import BookingPage from './pages/BookingPage';
 import PaymentPage from './pages/PaymentPage';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
 
-
 // Pages Gestion Réservations (Sprint 5)
 import MyBookingsPage from './pages/MyBookingsPage';
 import BookingDetailPage from './pages/BookingDetailPage';
-
 
 import './App.css';
 
@@ -109,6 +109,7 @@ function HomePage() {
     <>
       <Hero />
       <SearchSection />
+
       <Features />
       <Testimonials />
       <CTA />
@@ -123,6 +124,9 @@ function AppRoutes() {
     <div className="min-h-screen flex flex-col">
       {/* N'afficher le Header que si on n'est pas dans l'admin */}
       {!window.location.pathname.startsWith('/admin') && <Header />}
+      
+      {/* Chatbot flottant (visible partout sauf admin) */}
+      {!window.location.pathname.startsWith('/admin') && <Chatbot />}
       
       <main className="flex-grow">
         <Routes>
@@ -165,7 +169,7 @@ function AppRoutes() {
           <Route path="/flights/:id" element={<FlightDetailPage />} />
           <Route path="/packages/:id" element={<PackageDetailPage />} />
 
-          {/* Page de test - Sprint 4 */}
+ 
           {/* Routes Réservation - Sprint 4 */}
           <Route
             path="/booking/:type/:id"

@@ -47,7 +47,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            TravelBook
+           Saferni
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Connectez-vous à votre compte
@@ -119,13 +119,7 @@ export default function LoginPage() {
         </form>
 
         {/* Info admin pour test */}
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-xs text-blue-700 font-semibold mb-1">
-            🔐 Compte Admin (Test):
-          </p>
-          <p className="text-xs text-blue-600">Email: admin@traveltodo.com</p>
-          <p className="text-xs text-blue-600">Mot de passe: Admin@123456</p>
-        </div>
+        
       </div>
     </div>
   );

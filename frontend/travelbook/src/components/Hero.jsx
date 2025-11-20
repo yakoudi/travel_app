@@ -5,7 +5,7 @@ export default function Hero() {
     <div className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 md:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Découvrez le monde avec TravelBook</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">Découvrez le monde avec Saferni</h1>
           <p className="text-lg md:text-xl text-blue-100 mb-8">
             Réservez vos vols, hôtels et activités en un seul endroit. Les meilleures offres, toujours à votre portée.
           </p>
