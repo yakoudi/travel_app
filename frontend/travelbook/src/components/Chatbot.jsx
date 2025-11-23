@@ -111,46 +111,78 @@ export default function Chatbot() {
 
   // Rendu d'une carte de recommandation
   const RecommendationCard = ({ rec }) => {
+    const isWebResult = rec.source && rec.source.includes('Web');
+    
     const handleClick = () => {
+      // Si c'est un résultat web, ouvrir dans un nouvel onglet sur l'URL fournie
+      if (isWebResult) {
+        const url = rec.source_url || `https://www.booking.com/searchresults.html?ss=${rec.destination || rec.name}`;
+        window.open(url, '_blank');
+        return;
+      }
+      
+      // Sinon, naviguer dans l'app
       setIsMinimized(true);
       navigate(`/${rec.type}s/${rec.id}`);
     };
 
+    // Gestion des images
+    const imageUrl = rec.image || 'https://via.placeholder.com/200x150?text=Hotel';
+    const hasValidImage = rec.image && (rec.image.startsWith('http') || rec.image.startsWith('/'));
+
     return (
       <div
         onClick={handleClick}
-        className="bg-white border-2 border-blue-200 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all"
+        className={`bg-white border-2 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all ${
+          isWebResult ? 'border-green-200 bg-green-50' : 'border-blue-200'
+        }`}
       >
         <div className="flex items-start gap-3">
-          {rec.image && (
+          {hasValidImage && (
             <img
-              src={rec.image}
+              src={imageUrl}
               alt={rec.name}
               className="w-16 h-16 object-cover rounded-lg"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
             />
           )}
-          <div className="flex-1">
-            <h4 className="font-bold text-gray-900 text-sm mb-1">{rec.name}</h4>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h4 className="font-bold text-gray-900 text-sm break-words">{rec.name}</h4>
+              {isWebResult && (
+                <span className="bg-green-200 text-green-800 text-xs px-2 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                  Web
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-600 flex-wrap">
               {rec.type === 'hotel' && (
                 <>
-                  <span>⭐ {rec.stars}</span>
+                  <span>⭐ {rec.stars || 4}</span>
                   <span>•</span>
-                  <span>{rec.destination}</span>
+                  <span>{rec.destination || 'Destination'}</span>
+                  {rec.rating && (
+                    <>
+                      <span>•</span>
+                      <span>Note: {rec.rating.toFixed(1)}</span>
+                    </>
+                  )}
                 </>
               )}
               {rec.type === 'flight' && (
                 <>
-                  <span>{rec.origin} → {rec.destination}</span>
+                  <span>{rec.origin || 'TUN'} → {rec.destination || 'Dest'}</span>
                   <span>•</span>
-                  <span>{rec.duration}</span>
+                  <span>{rec.duration || '2h'}</span>
                 </>
               )}
               {rec.type === 'package' && (
                 <>
-                  <span>{rec.duration} jours</span>
+                  <span>{rec.duration || 5} jours</span>
                   <span>•</span>
-                  <span>{rec.destination}</span>
+                  <span>{rec.destination || 'Destination'}</span>
                 </>
               )}
             </div>
@@ -158,6 +190,9 @@ export default function Chatbot() {
               {formatPrice(rec.price)}
               {rec.type === 'hotel' && <span className="text-xs text-gray-500">/nuit</span>}
             </p>
+            {isWebResult && rec.source && (
+              <p className="text-xs text-gray-500 mt-1">Source: {rec.source}</p>
+            )}
           </div>
         </div>
       </div>

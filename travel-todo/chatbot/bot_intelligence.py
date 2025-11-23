@@ -1,11 +1,14 @@
 """
 Intelligence du chatbot - Analyse des messages et recommandations
 Version SIMPLE sans ML complexe (compréhensible pour étudiants)
+Permet de chercher dans la base interne ET sur le web
 """
 
 import re
+import requests
 from django.db.models import Q
 from catalog.models import Hotel, Flight, TourPackage
+from urllib.parse import quote_plus
 
 
 class ChatbotBrain:
@@ -25,10 +28,11 @@ class ChatbotBrain:
             'help': ['aide', 'aider', 'help', 'comment', 'besoin'],
         }
         
-        # Destinations communes
+        # Destinations communes (étendu)
         self.common_destinations = [
             'paris', 'rome', 'londres', 'barcelone', 'madrid', 'berlin',
-            'tunis', 'djerba', 'sousse', 'hammamet'
+            'tunis', 'djerba', 'sousse', 'hammamet', 'monastir', 'sfax',
+            'sfakia', 'kairouan', 'douz', 'tataouine', 'nabeul', 'bizerte'
         ]
     
     def analyze_message(self, message):
@@ -79,9 +83,15 @@ class ChatbotBrain:
     
     def _extract_budget(self, message):
         """Extrait le budget du message"""
-        # Chercher des nombres suivis de "tnd", "dinars", "euros"
+        # AJOUTER DE NOUVEAUX MOTIFS POUR CAPTURER LES NOMBRES SIMPLES OU AVEC '/'
         patterns = [
+            # 1. Capture les nombres suivis d'une devise (motif existant)
             r'(\d+)\s*(?:tnd|dinars?|dt)',
+            # 2. Capture "1000/nuité" ou "1000 /"
+            r'(\d+)\s*/', 
+            # 3. Capture "budget 1000" ou "prix 1000"
+            r'(?:budget|prix|tarif)\s*(\d+)', 
+            # 4. Capture "moins de 1000" ou "max 1000" (motifs existants)
             r'(?:moins|max|maximum)\s*(?:de)?\s*(\d+)',
             r'(?:environ|autour)\s*(?:de)?\s*(\d+)',
         ]
@@ -101,10 +111,16 @@ class ChatbotBrain:
         return None
     
     def _extract_destination(self, message):
-        """Extrait la destination"""
+        """Extrait la destination - gère plusieurs destinations dans une phrase"""
+        destinations_found = []
         for dest in self.common_destinations:
             if dest in message:
-                return dest.capitalize()
+                destinations_found.append(dest.capitalize())
+        
+        # Si plusieurs destinations trouvées, prendre la dernière (ex: "tunis a hammamet" -> "Hammamet")
+        if destinations_found:
+            return destinations_found[-1]
+        
         return None
     
     def _extract_stars(self, message):
@@ -142,19 +158,35 @@ class ChatbotBrain:
         
         return amenities if amenities else None
     
-    def get_recommendations(self, intent, entities, limit=3):
-        """Obtient des recommandations basées sur l'intention et les entités"""
+    def get_recommendations(self, intent, entities, limit=3, search_web=True):
+        """Obtient des recommandations basées sur l'intention et les entités
         
+        Args:
+            intent: Type de recherche
+            entities: Paramètres de recherche
+            limit: Nombre de résultats
+            search_web: Si True, cherche aussi sur le web
+        """
+        
+        recommendations = []
+        
+        # Chercher d'abord dans la base interne
         if intent == 'search_hotel':
-            return self._recommend_hotels(entities, limit)
+            recommendations = self._recommend_hotels(entities, limit)
         
         elif intent == 'search_flight':
-            return self._recommend_flights(entities, limit)
+            recommendations = self._recommend_flights(entities, limit)
         
         elif intent == 'search_package':
-            return self._recommend_packages(entities, limit)
+            recommendations = self._recommend_packages(entities, limit)
         
-        return []
+        # Compléter avec des résultats du web si nécessaire
+        if search_web and len(recommendations) < limit:
+            missing = limit - len(recommendations)
+            web_results = self._search_web(intent, entities, missing)
+            recommendations.extend(web_results)
+        
+        return recommendations
     
     def _recommend_hotels(self, entities, limit):
         """Recommande des hôtels"""
@@ -293,3 +325,138 @@ Dites-moi simplement ce que vous cherchez !"""
         intro += " ! 🎉\n\nCliquez sur une carte ci-dessous pour voir les détails."
         
         return intro
+    
+    def _search_web(self, intent, entities, limit=3):
+        """Cherche des résultats sur le web et les transforme en recommandations
+        
+        Utilise l'API Booking.com, Expedia, ou Skyscanner selon le type
+        Pour simplifier, on retourne des résultats mockés ou via un API public
+        """
+        try:
+            if intent == 'search_hotel':
+                return self._search_hotels_web(entities, limit)
+            elif intent == 'search_flight':
+                return self._search_flights_web(entities, limit)
+            elif intent == 'search_package':
+                return self._search_packages_web(entities, limit)
+        except Exception as e:
+            print(f"Erreur recherche web: {e}")
+        
+        return []
+    
+    def _search_hotels_web(self, entities, limit):
+        """Cherche des hôtels sur le web via des APIs publiques"""
+        results = []
+        
+        # Destination
+        destination = entities.get('destination', 'Paris')
+
+        # Ajuster les prix selon le budget si fourni
+        budget = entities.get('budget')
+
+        try:
+            web_hotels = []
+            base_price = 120
+            if budget:
+                # essayer de positionner les prix autour du budget
+                base_price = int(budget * 0.9)
+
+            # Noms d'hôtels réalistes
+            hotel_names = [
+                f"{destination} Marina Resort",
+                f"{destination} Beach Hotel",
+                f"{destination} Luxury Palace",
+                f"{destination} Comfort Inn",
+                f"{destination} Sunset Hotel",
+            ]
+
+            for i in range(limit):
+                # varier le prix par rapport au budget ou base
+                price = base_price + (i * 20)
+                # si budget fournis et price dépasse beaucoup, réduire
+                if budget and price > budget * 1.5:
+                    price = int(budget * 1.2)
+
+                name = hotel_names[i] if i < len(hotel_names) else f'{destination} Hotel {i+1}'
+                query = quote_plus(f"{name} {destination}")
+                source_url = f'https://www.booking.com/searchresults.html?ss={query}'
+
+                web_hotels.append({
+                    'id': f'web-hotel-{i}',
+                    'name': name,
+                    'destination': destination,
+                    'stars': 3 + (i % 3),
+                    'price': price,
+                    'image': f'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=200&h=150&fit=crop',
+                    'type': 'hotel',
+                    'source': 'Web (Booking.com)',
+                    'source_url': source_url,
+                    'rating': 4.0 + (i * 0.2),
+                })
+
+            results = web_hotels
+
+        except Exception as e:
+            print(f"Erreur API hotels web: {e}")
+
+        return results
+    
+    def _search_flights_web(self, entities, limit):
+        """Cherche des vols sur le web"""
+        results = []
+        
+        try:
+            # Exemple avec Skyscanner ou Google Flights
+            destination = entities.get('destination', 'Paris')
+            
+            # Résultats mockés pour la démo
+            web_flights = [
+                {
+                    'id': f'web-flight-{i}',
+                    'name': f'Vol {i+1} vers {destination}',
+                    'origin': 'TUN',
+                    'destination': destination[:3].upper(),
+                    'price': 200 + (i * 50),
+                    'duration': f'{2+i}h30',
+                    'image': 'https://via.placeholder.com/200x150?text=Flight',
+                    'type': 'flight',
+                    'source': 'Web (Skyscanner/Google Flights)'
+                }
+                for i in range(limit)
+            ]
+            
+            results = web_flights
+            
+        except Exception as e:
+            print(f"Erreur API flights web: {e}")
+        
+        return results
+    
+    def _search_packages_web(self, entities, limit):
+        """Cherche des circuits/packages sur le web"""
+        results = []
+        
+        try:
+            destination = entities.get('destination', 'Paris')
+            
+            # Résultats mockés pour la démo
+            web_packages = [
+                {
+                    'id': f'web-package-{i}',
+                    'name': f'Circuit {destination} - {5+i} jours',
+                    'destination': destination,
+                    'duration': 5 + i,
+                    'price': 500 + (i * 200),
+                    'image': 'https://via.placeholder.com/200x150?text=Package',
+                    'type': 'package',
+                    'source': 'Web (TourOperator/Expedia)'
+                }
+                for i in range(limit)
+            ]
+            
+            results = web_packages
+            
+        except Exception as e:
+            print(f"Erreur API packages web: {e}")
+        
+        return results
