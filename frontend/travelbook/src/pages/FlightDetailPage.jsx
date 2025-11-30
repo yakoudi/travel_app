@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plane, Clock, Calendar, Users, Briefcase, CheckCircle, Coffee, Wifi, Shield, Heart, Share2 } from 'lucide-react';
 import { flightAPI } from '../api/catalog';
 import { formatPrice, formatDateTime } from '../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../utils/sweetAlert';
 
 export default function FlightDetailPage() {
   const { id } = useParams();
@@ -24,7 +25,7 @@ export default function FlightDetailPage() {
       setFlight(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement du vol');
+      showError('Erreur lors du chargement du vol');
     } finally {
       setLoading(false);
     }

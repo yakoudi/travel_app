@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Users, CreditCard, Eye, XCircle, Download, Clock } from 'lucide-react';
 import { bookingAPI } from '../api/bookings';
 import { formatPrice } from '../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../utils/sweetAlert';
 
 export default function MyBookingsPage() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function MyBookingsPage() {
       
       // Si erreur 401, rediriger vers login
       if (error.response?.status === 401) {
-        alert('Session expirée. Veuillez vous reconnecter.');
+        showWarning('Session expirée. Veuillez vous reconnecter.');
         navigate('/login');
       }
     } finally {
@@ -45,17 +46,18 @@ export default function MyBookingsPage() {
   };
 
   const handleCancelBooking = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir annuler cette réservation ?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await bookingAPI.cancel(id);
-      alert('✅ Réservation annulée avec succès');
+      await showSuccess('Réservation annulée avec succès');
       loadBookings();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de l\'annulation');
+      showError('Erreur lors de l\'annulation');
     }
   };
 
@@ -305,7 +307,7 @@ export default function MyBookingsPage() {
 
                     {booking.status === 'confirmed' && (
                       <button
-                        onClick={() => alert('📄 Téléchargement du voucher (à implémenter)')}
+                        onClick={() => showInfo('📄 Téléchargement du voucher (à implémenter)')}
                         className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-green-50 text-green-600 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors"
                       >
                         <Download className="w-4 h-4" />

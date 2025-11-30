@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, MapPin, Star } from 'lucide-react';
 import { destinationAPI } from '../../../api/catalog';
 import DestinationForm from './DestinationForm';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function DestinationList() {
   const [destinations, setDestinations] = useState([]);
@@ -21,24 +22,25 @@ export default function DestinationList() {
       setDestinations(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement des destinations');
+      showError('Erreur lors du chargement des destinations');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette destination ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir supprimer cette destination ?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await destinationAPI.delete(id);
-      alert('Destination supprimée avec succès');
+      await showSuccess('Destination supprimée avec succès');
       loadDestinations();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la suppression');
+      showError('Erreur lors de la suppression');
     }
   };
 

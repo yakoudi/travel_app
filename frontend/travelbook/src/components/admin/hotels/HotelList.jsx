@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Hotel, Star, Wifi, Coffee, Car, Utensils, Sparkles,
 import { hotelAPI } from '../../../api/catalog';
 import HotelForm from './HotelForm';
 import { formatPrice, renderStars } from '../../../utils/formatters';
+import { showSuccess, showError, showConfirm } from '../../../utils/sweetAlert';
 
 export default function HotelList() {
   const [hotels, setHotels] = useState([]);
@@ -33,24 +34,25 @@ export default function HotelList() {
       setHotels(data.results || data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement des hôtels');
+      showError('Erreur lors du chargement des hôtels');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet hôtel ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir supprimer cet hôtel ?', 'Confirmer la suppression');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await hotelAPI.delete(id);
-      alert('Hôtel supprimé avec succès');
+      await showSuccess('Hôtel supprimé avec succès');
       loadHotels();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la suppression');
+      showError('Erreur lors de la suppression');
     }
   };
 
@@ -60,7 +62,7 @@ export default function HotelList() {
       loadHotels();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du changement de disponibilité');
+      showError('Erreur lors du changement de disponibilité');
     }
   };
 

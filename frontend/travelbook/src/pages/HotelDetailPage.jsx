@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Star, Wifi, Car, Utensils, Coffee, Sparkles, Heart, Share2 } from 'lucide-react';
 import { hotelAPI } from '../api/catalog';
 import { formatPrice, renderStars } from '../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../utils/sweetAlert';
 
 export default function HotelDetailPage() {
   const { id } = useParams();
@@ -24,7 +25,7 @@ export default function HotelDetailPage() {
       setSelectedImage(0);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement de l\'hôtel');
+      showError('Erreur lors du chargement de l\'hôtel');
     } finally {
       setLoading(false);
     }

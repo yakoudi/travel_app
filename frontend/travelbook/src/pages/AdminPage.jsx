@@ -7,6 +7,7 @@ import FlightList from '../components/admin/flights/FlightList';
 import PackageList from '../components/admin/packages/PackageList';
 import PromotionList from '../components/admin/promotions/PromotionList';
 import AdminBookingsPage from '../components/admin/AdminBookingsPage';
+import { showConfirm } from '../utils/sweetAlert';
 
 export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -43,8 +44,9 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogout = () => {
-    if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+  const handleLogout = async () => {
+    const result = await showConfirm('Êtes-vous sûr de vouloir vous déconnecter ?', 'Confirmer la déconnexion');
+    if (result.isConfirmed) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       window.location.href = '/login';

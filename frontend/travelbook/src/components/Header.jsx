@@ -48,12 +48,14 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-8 items-center">
-            <button 
-              onClick={() => navigate('/')}
-              className="text-gray-700 hover:text-blue-600 transition"
-            >
-              Accueil
-            </button>
+            {(!user || user.role !== 'admin') && (
+              <button 
+                onClick={() => navigate('/')}
+                className="text-gray-700 hover:text-blue-600 transition"
+              >
+                Accueil
+              </button>
+            )}
             <button 
               onClick={() => navigate('/destinations')}
               className="text-gray-700 hover:text-blue-600 transition flex items-center gap-1"
@@ -187,15 +189,17 @@ export default function Header() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden pb-4 space-y-3">
-            <button 
-              onClick={() => {
-                navigate('/');
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left text-gray-700 hover:text-blue-600"
-            >
-              Accueil
-            </button>
+            {(!user || user.role !== 'admin') && (
+              <button 
+                onClick={() => {
+                  navigate('/');
+                  setMobileMenuOpen(false);
+                }}
+                className="block w-full text-left text-gray-700 hover:text-blue-600"
+              >
+                Accueil
+              </button>
+            )}
             <button 
               onClick={() => {
                 navigate('/destinations');

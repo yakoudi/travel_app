@@ -5,6 +5,7 @@ import { hotelAPI, flightAPI, packageAPI } from '../api/catalog';
 import { bookingAPI } from '../api/bookings';
 import { formatPrice } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../utils/sweetAlert';
 
 export default function BookingPage() {
   const { type, id } = useParams(); // type: hotel, flight, package
@@ -46,7 +47,7 @@ export default function BookingPage() {
       setItem(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement');
+      showError('Erreur lors du chargement');
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export default function BookingPage() {
     e.preventDefault();
     
     if (!formData.start_date || !formData.end_date) {
-      alert('Veuillez remplir toutes les dates');
+      showWarning('Veuillez remplir toutes les dates');
       return;
     }
 
@@ -85,7 +86,7 @@ export default function BookingPage() {
       navigate(`/payment/${booking.id}`);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la réservation');
+      showError('Erreur lors de la réservation');
     } finally {
       setSubmitting(false);
     }

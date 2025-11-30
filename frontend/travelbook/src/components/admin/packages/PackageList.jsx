@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Package, Calendar, MapPin, Check } from 'lucide-rea
 import { packageAPI } from '../../../api/catalog';
 import PackageForm from './PackageForm';
 import { formatPrice } from '../../../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function PackageList() {
   const [packages, setPackages] = useState([]);
@@ -21,24 +22,25 @@ export default function PackageList() {
       setPackages(data.results || data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement des circuits');
+      showError('Erreur lors du chargement des circuits');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce circuit ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir supprimer ce circuit ?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await packageAPI.delete(id);
-      alert('Circuit supprimé avec succès');
+      await showSuccess('Circuit supprimé avec succès');
       loadPackages();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la suppression');
+      showError('Erreur lors de la suppression');
     }
   };
 

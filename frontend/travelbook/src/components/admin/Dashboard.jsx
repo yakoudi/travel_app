@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Hotel, Plane, MapPin, Package, Gift, TrendingUp } from 'lucide-react';
+import { Hotel, Plane, MapPin, Package, Gift, TrendingUp, Calendar } from 'lucide-react';
 import { destinationAPI, hotelAPI, flightAPI, packageAPI, promotionAPI } from '../../api/catalog';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -11,6 +12,7 @@ export default function Dashboard() {
     promotions: 0,
   });
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadStats();
@@ -116,18 +118,34 @@ export default function Dashboard() {
       {/* Actions rapides */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Actions Rapides</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button 
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+          >
             <MapPin className="w-6 h-6 text-blue-600" />
             <span className="font-medium text-gray-700">Ajouter une destination</span>
           </button>
-          <button className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all">
+          <button 
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+          >
             <Hotel className="w-6 h-6 text-green-600" />
             <span className="font-medium text-gray-700">Ajouter un hôtel</span>
           </button>
-          <button className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all">
+          <button 
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all"
+          >
             <Plane className="w-6 h-6 text-purple-600" />
             <span className="font-medium text-gray-700">Ajouter un vol</span>
+          </button>
+          <button 
+            onClick={() => navigate('/search')}
+            className="flex items-center gap-3 p-4 border-2 border-orange-200 bg-orange-50 rounded-lg hover:border-orange-500 hover:bg-orange-100 transition-all"
+          >
+            <Calendar className="w-6 h-6 text-orange-600" />
+            <span className="font-medium text-gray-700">Ajouter une réservation</span>
           </button>
         </div>
       </div>

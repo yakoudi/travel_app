@@ -19,8 +19,7 @@ const RegisterPage = () => {
 
   const handleChange = (e) => {
     setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+      ...formData,     [e.target.name]: e.target.value,
     });
     setError('');
   };
@@ -40,7 +39,14 @@ const RegisterPage = () => {
     const result = await register(formData);
 
     if (result.success) {
-      navigate('/');
+      // Rediriger vers le dashboard admin si l'utilisateur est admin
+      // Sinon rediriger vers la page d'accueil
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (userData?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } else {
       setError(result.message);
     }

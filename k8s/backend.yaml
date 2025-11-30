@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travel-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: travel-backend
+  template:
+    metadata:
+      labels:
+        app: travel-backend
+    spec:
+      containers:
+      - name: travel-backend
+        image: travel-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          value: "host.docker.internal"
+        - name: DB_NAME
+          value: "travel_todo_db"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          value: "postgres"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: travel-backend-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: travel-backend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

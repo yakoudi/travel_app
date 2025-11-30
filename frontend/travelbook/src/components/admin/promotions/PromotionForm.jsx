@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Gift } from 'lucide-react';
 import { promotionAPI } from '../../../api/catalog';
 import { toDateTimeLocal } from '../../../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function PromotionForm({ promotion, onClose }) {
   const [formData, setFormData] = useState({
@@ -45,13 +46,13 @@ export default function PromotionForm({ promotion, onClose }) {
 
     // Validation: la date de fin doit être après la date de début
     if (new Date(formData.end_date) <= new Date(formData.start_date)) {
-      alert('La date de fin doit être après la date de début');
+      showWarning('La date de fin doit être après la date de début');
       return;
     }
 
     // Validation: valeur de réduction
     if (formData.discount_type === 'percentage' && (formData.discount_value <= 0 || formData.discount_value > 100)) {
-      alert('La réduction en pourcentage doit être entre 1 et 100');
+      showWarning('La réduction en pourcentage doit être entre 1 et 100');
       return;
     }
 
@@ -71,10 +72,10 @@ export default function PromotionForm({ promotion, onClose }) {
 
       if (promotion) {
         await promotionAPI.update(promotion.id, data);
-        alert('Promotion modifiée avec succès');
+        await showSuccess('Promotion modifiée avec succès');
       } else {
         await promotionAPI.create(data);
-        alert('Promotion créée avec succès');
+        await showSuccess('Promotion créée avec succès');
       }
 
       onClose();
@@ -83,12 +84,12 @@ export default function PromotionForm({ promotion, onClose }) {
       if (error.response?.data) {
         const errors = error.response.data;
         if (errors.code) {
-          alert('Ce code promo existe déjà');
+          showWarning('Ce code promo existe déjà');
         } else {
-          alert('Erreur lors de l\'enregistrement');
+          showError('Erreur lors de l\'enregistrement');
         }
       } else {
-        alert('Erreur lors de l\'enregistrement');
+        showError('Erreur lors de l\'enregistrement');
       }
     } finally {
       setLoading(false);

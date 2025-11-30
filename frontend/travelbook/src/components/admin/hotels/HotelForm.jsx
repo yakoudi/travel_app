@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { hotelAPI, destinationAPI } from '../../../api/catalog';
+import { showSuccess, showError } from '../../../utils/sweetAlert';
 
 export default function HotelForm({ hotel, onClose }) {
   const [formData, setFormData] = useState({
@@ -10,6 +11,10 @@ export default function HotelForm({ hotel, onClose }) {
     address: '',
     stars: 3,
     price_per_night: '',
+    price_single_room: '',
+    price_double_room: '',
+    price_suite: '',
+    price_family_room: '',
     has_wifi: true,
     has_pool: false,
     has_parking: false,
@@ -36,6 +41,10 @@ export default function HotelForm({ hotel, onClose }) {
         address: hotel.address || '',
         stars: hotel.stars || 3,
         price_per_night: hotel.price_per_night || '',
+        price_single_room: hotel.price_single_room || '',
+        price_double_room: hotel.price_double_room || '',
+        price_suite: hotel.price_suite || '',
+        price_family_room: hotel.price_family_room || '',
         has_wifi: hotel.has_wifi || false,
         has_pool: hotel.has_pool || false,
         has_parking: hotel.has_parking || false,
@@ -99,13 +108,23 @@ export default function HotelForm({ hotel, onClose }) {
     setLoading(true);
 
     try {
+      // Calculer le prix minimum pour price_per_night
+      const prices = [
+        formData.price_single_room,
+        formData.price_double_room,
+        formData.price_suite,
+        formData.price_family_room
+      ].filter(p => p && parseFloat(p) > 0);
+      
+      const minPrice = prices.length > 0 ? Math.min(...prices.map(p => parseFloat(p))) : formData.price_per_night;
+
       const data = new FormData();
       data.append('name', formData.name);
       data.append('destination', formData.destination);
       data.append('description', formData.description);
       data.append('address', formData.address);
       data.append('stars', formData.stars);
-      data.append('price_per_night', formData.price_per_night);
+      data.append('price_per_night', minPrice || formData.price_per_night);
       data.append('has_wifi', formData.has_wifi);
       data.append('has_pool', formData.has_pool);
       data.append('has_parking', formData.has_parking);
@@ -124,16 +143,16 @@ export default function HotelForm({ hotel, onClose }) {
 
       if (hotel) {
         await hotelAPI.update(hotel.id, data);
-        alert('Hôtel modifié avec succès');
+        await showSuccess('Hôtel modifié avec succès');
       } else {
         await hotelAPI.create(data);
-        alert('Hôtel créé avec succès');
+        await showSuccess('Hôtel créé avec succès');
       }
 
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de l\'enregistrement');
+      showError('Erreur lors de l\'enregistrement');
     } finally {
       setLoading(false);
     }
@@ -228,7 +247,7 @@ export default function HotelForm({ hotel, onClose }) {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Étoiles */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -249,24 +268,6 @@ export default function HotelForm({ hotel, onClose }) {
               </select>
             </div>
 
-            {/* Prix */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prix par nuit (TND) *
-              </label>
-              <input
-                type="number"
-                name="price_per_night"
-                value={formData.price_per_night}
-                onChange={handleChange}
-                required
-                min="0"
-                step="0.01"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="150.00"
-              />
-            </div>
-
             {/* Nombre de chambres */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -283,6 +284,70 @@ export default function HotelForm({ hotel, onClose }) {
                 placeholder="10"
               />
             </div>
+          </div>
+
+          {/* Prix par type de chambre */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Prix par type de chambre (TND) *
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Chambre Simple</label>
+                <input
+                  type="number"
+                  name="price_single_room"
+                  value={formData.price_single_room}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="100.00"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Chambre Double</label>
+                <input
+                  type="number"
+                  name="price_double_room"
+                  value={formData.price_double_room}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="150.00"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Suite</label>
+                <input
+                  type="number"
+                  name="price_suite"
+                  value={formData.price_suite}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="300.00"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Chambre Familiale</label>
+                <input
+                  type="number"
+                  name="price_family_room"
+                  value={formData.price_family_room}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="200.00"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              💡 Le prix minimum sera utilisé comme prix de base
+            </p>
           </div>
 
           {/* Équipements */}

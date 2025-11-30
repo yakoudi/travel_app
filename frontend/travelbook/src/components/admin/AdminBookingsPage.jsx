@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, DollarSign, TrendingUp, Users, Search, Eye, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
 import { formatPrice } from '../../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../utils/sweetAlert';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -27,7 +28,7 @@ export default function AdminBookingsPage() {
       setBookings(response.data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement des réservations');
+      showError('Erreur lors du chargement des réservations');
     } finally {
       setLoading(false);
     }
@@ -41,11 +42,11 @@ export default function AdminBookingsPage() {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert('✅ Statut mis à jour');
+      await showSuccess('Statut mis à jour');
       loadBookings();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de la mise à jour');
+      showError('Erreur lors de la mise à jour');
     }
   };
 

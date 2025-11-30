@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, Users, CreditCard, MapPin, Phone, Mail, Download, 
 import { bookingAPI } from '../api/bookings';
 import { formatPrice } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../utils/sweetAlert';
 
 export default function BookingDetailPage() {
   const { id } = useParams();
@@ -23,7 +24,7 @@ export default function BookingDetailPage() {
       setBooking(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement');
+      showError('Erreur lors du chargement');
       navigate('/my-bookings');
     } finally {
       setLoading(false);
@@ -31,17 +32,18 @@ export default function BookingDetailPage() {
   };
 
   const handleCancel = async () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir annuler cette réservation ?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await bookingAPI.cancel(id);
-      alert('✅ Réservation annulée avec succès');
+      await showSuccess('Réservation annulée avec succès');
       loadBooking();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de l\'annulation');
+      showError('Erreur lors de l\'annulation');
     }
   };
 
@@ -262,7 +264,7 @@ export default function BookingDetailPage() {
               <div className="mt-6 space-y-3">
                 {booking.status === 'confirmed' && (
                   <button
-                    onClick={() => alert('📄 Téléchargement (à implémenter)')}
+                    onClick={() => showInfo('📄 Téléchargement (à implémenter)')}
                     className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center gap-2"
                   >
                     <Download className="w-5 h-5" />

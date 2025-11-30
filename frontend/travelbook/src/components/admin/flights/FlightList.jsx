@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Plane, Clock, Calendar, Users } from 'lucide-react'
 import { flightAPI } from '../../../api/catalog';
 import FlightForm from './FlightForm';
 import { formatPrice, formatDateTime } from '../../../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function FlightList() {
   const [flights, setFlights] = useState([]);
@@ -21,24 +22,25 @@ export default function FlightList() {
       setFlights(data.results || data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement des vols');
+      showError('Erreur lors du chargement des vols');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce vol ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir supprimer ce vol ?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await flightAPI.delete(id);
-      alert('Vol supprimé avec succès');
+      await showSuccess('Vol supprimé avec succès');
       loadFlights();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la suppression');
+      showError('Erreur lors de la suppression');
     }
   };
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Calendar, Users, MapPin, Download, Home } from 'lucide-react';
 import { bookingAPI } from '../api/bookings';
 import { formatPrice } from '../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../utils/sweetAlert';
 
 export default function BookingConfirmationPage() {
   const { bookingId } = useParams();
@@ -29,7 +30,7 @@ export default function BookingConfirmationPage() {
 
   const handleDownloadVoucher = () => {
     // Simulation du téléchargement
-    alert('📄 Le voucher sera téléchargé (fonctionnalité à implémenter)');
+    showInfo('📄 Le voucher sera téléchargé (fonctionnalité à implémenter)');
   };
 
   if (loading) {

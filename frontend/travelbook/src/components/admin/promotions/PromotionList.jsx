@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Gift, Calendar, Tag, TrendingUp } from 'lucide-reac
 import { promotionAPI } from '../../../api/catalog';
 import PromotionForm from './PromotionForm';
 import { formatDate } from '../../../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function PromotionList() {
   const [promotions, setPromotions] = useState([]);
@@ -21,24 +22,25 @@ export default function PromotionList() {
       setPromotions(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement des promotions');
+      showError('Erreur lors du chargement des promotions');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette promotion ?')) {
+    const result = await showConfirm('Êtes-vous sûr de vouloir supprimer cette promotion ?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       await promotionAPI.delete(id);
-      alert('Promotion supprimée avec succès');
+      await showSuccess('Promotion supprimée avec succès');
       loadPromotions();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la suppression');
+      showError('Erreur lors de la suppression');
     }
   };
 

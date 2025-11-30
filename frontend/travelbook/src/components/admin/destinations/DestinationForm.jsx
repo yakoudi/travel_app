@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Upload } from 'lucide-react';
 import { destinationAPI } from '../../../api/catalog';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function DestinationForm({ destination, onClose }) {
   const [formData, setFormData] = useState({
@@ -59,16 +60,16 @@ export default function DestinationForm({ destination, onClose }) {
 
       if (destination) {
         await destinationAPI.update(destination.id, data);
-        alert('Destination modifiée avec succès');
+        await showSuccess('Destination modifiée avec succès');
       } else {
         await destinationAPI.create(data);
-        alert('Destination créée avec succès');
+        await showSuccess('Destination créée avec succès');
       }
 
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de l\'enregistrement');
+      showError('Erreur lors de l\'enregistrement');
     } finally {
       setLoading(false);
     }

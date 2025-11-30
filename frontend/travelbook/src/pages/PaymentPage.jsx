@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CreditCard, Building, Wallet, DollarSign, Check, Lock } from 'lucide-react';
 import { bookingAPI, paymentAPI } from '../api/bookings';
 import { formatPrice } from '../utils/formatters';
+import { showSuccess, showError, showWarning } from '../utils/sweetAlert';
 
 export default function PaymentPage() {
   const { bookingId } = useParams();
@@ -24,7 +25,7 @@ export default function PaymentPage() {
       setBooking(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement de la réservation');
+      showError('Erreur lors du chargement de la réservation');
       navigate('/');
     } finally {
       setLoading(false);
@@ -33,7 +34,7 @@ export default function PaymentPage() {
 
   const handlePayment = async () => {
     if (!selectedMethod) {
-      alert('Veuillez sélectionner une méthode de paiement');
+      showWarning('Veuillez sélectionner une méthode de paiement');
       return;
     }
 
@@ -44,13 +45,13 @@ export default function PaymentPage() {
       const result = await paymentAPI.processPayment(bookingId, selectedMethod);
       
       // Afficher le message de succès
-      alert('✅ Paiement effectué avec succès !');
+      await showSuccess('Paiement effectué avec succès !');
       
       // Rediriger vers la page de confirmation
       navigate(`/booking-confirmation/${bookingId}`);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors du paiement. Veuillez réessayer.');
+      showError('Erreur lors du paiement. Veuillez réessayer.');
     } finally {
       setProcessing(false);
     }

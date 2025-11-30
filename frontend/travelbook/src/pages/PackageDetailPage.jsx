@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Users, Check, Hotel, Plane, Utensils, User, Heart, Share2, Clock, Star } from 'lucide-react';
 import { packageAPI } from '../api/catalog';
 import { formatPrice } from '../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo } from '../utils/sweetAlert';
 
 export default function PackageDetailPage() {
   const { id } = useParams();
@@ -24,7 +25,7 @@ export default function PackageDetailPage() {
       setPkg(data);
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors du chargement du circuit');
+      showError('Erreur lors du chargement du circuit');
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Upload, Package } from 'lucide-react';
 import { packageAPI, destinationAPI } from '../../../api/catalog';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function PackageForm({ package: pkg, onClose }) {
   const [formData, setFormData] = useState({
@@ -95,16 +96,16 @@ export default function PackageForm({ package: pkg, onClose }) {
 
       if (pkg) {
         await packageAPI.update(pkg.id, data);
-        alert('Circuit modifié avec succès');
+        await showSuccess('Circuit modifié avec succès');
       } else {
         await packageAPI.create(data);
-        alert('Circuit créé avec succès');
+        await showSuccess('Circuit créé avec succès');
       }
 
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de l\'enregistrement');
+      showError('Erreur lors de l\'enregistrement');
     } finally {
       setLoading(false);
     }

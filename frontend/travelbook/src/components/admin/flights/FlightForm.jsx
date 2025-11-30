@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Plane } from 'lucide-react';
 import { flightAPI, destinationAPI } from '../../../api/catalog';
 import { toDateTimeLocal } from '../../../utils/formatters';
+import { showSuccess, showError, showWarning, showInfo, showConfirm, showToast } from '../../../utils/sweetAlert';
 
 export default function FlightForm({ flight, onClose }) {
   const [formData, setFormData] = useState({
@@ -62,7 +63,7 @@ export default function FlightForm({ flight, onClose }) {
     
     // Validation: l'arrivée doit être après le départ
     if (new Date(formData.arrival_time) <= new Date(formData.departure_time)) {
-      alert('L\'heure d\'arrivée doit être après l\'heure de départ');
+      showWarning('L\'heure d\'arrivée doit être après l\'heure de départ');
       return;
     }
 
@@ -85,16 +86,16 @@ export default function FlightForm({ flight, onClose }) {
 
       if (flight) {
         await flightAPI.update(flight.id, data);
-        alert('Vol modifié avec succès');
+        await showSuccess('Vol modifié avec succès');
       } else {
         await flightAPI.create(data);
-        alert('Vol créé avec succès');
+        await showSuccess('Vol créé avec succès');
       }
 
       onClose();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de l\'enregistrement');
+      showError('Erreur lors de l\'enregistrement');
     } finally {
       setLoading(false);
     }

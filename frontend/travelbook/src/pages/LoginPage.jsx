@@ -29,7 +29,13 @@ export default function LoginPage() {
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate('/');
+      // Rediriger vers le dashboard admin si l'utilisateur est admin
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (userData?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } else {
       setError(result.message);
     }
@@ -117,9 +123,6 @@ export default function LoginPage() {
             </p>
           </div>
         </form>
-
-        {/* Info admin pour test */}
-        
       </div>
     </div>
   );
