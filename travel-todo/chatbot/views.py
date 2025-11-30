@@ -66,10 +66,21 @@ class ChatbotViewSet(viewsets.ViewSet):
         )
         
         # 5. Générer la réponse du bot
+        # Récupérer l'historique de conversation
+        conversation_history = []
+        previous_messages = conversation.messages.all().order_by('-timestamp')[:5]
+        for msg in reversed(list(previous_messages)):
+            conversation_history.append({
+                'sender': msg.sender,
+                'message': msg.message
+            })
+        
         bot_response_text = self.brain.generate_response(
             analysis['intent'],
             analysis['entities'],
-            recommendations
+            recommendations,
+            user_message=message_text,
+            conversation_history=conversation_history
         )
         
         # 6. Sauvegarder la réponse du bot
@@ -128,23 +139,12 @@ class ChatbotViewSet(viewsets.ViewSet):
                 bot_message.entities = entities
                 bot_message.save()
         
-        # 8. Retourner la réponse
         return Response({
             'session_id': conversation.session_id,
-            'bot_message': {
-                'id': bot_message.id,
-                'message': bot_message.message,
-                'intent': bot_message.intent,
-                'recommendations': self._serialize_recommendations(bot_message),
-                'timestamp': bot_message.timestamp
-            },
-            'user_message': {
-                'id': user_message.id,
-                'message': user_message.message,
-                'timestamp': user_message.timestamp
-            }
+            'message': bot_response_text,
+            'recommendations': self._serialize_recommendations(bot_message)
         })
-    
+
     @action(detail=False, methods=['get'])
     def get_conversation(self, request):
         """
