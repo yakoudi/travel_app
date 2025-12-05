@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 import uuid
 
 from .models import ChatConversation, ChatMessage, ChatbotFAQ
+from catalog.models import Hotel, Flight, TourPackage
 from .bot_intelligence import ChatbotBrain
 from .serializers import ChatMessageSerializer, ChatConversationSerializer
 
@@ -55,12 +56,13 @@ class ChatbotViewSet(viewsets.ViewSet):
 
         # 3. Analyser le message
         analysis = self.brain.analyze_message(message_text)
-
-        # 4. Obtenir des recommandations
+        
+        # 4. Obtenir des recommandations (interne + web)
         recommendations = self.brain.get_recommendations(
             analysis['intent'],
             analysis['entities'],
-            limit=3
+            limit=3,
+            search_web=True  # Activer la recherche web
         )
 
         # 5. Générer la réponse du bot
@@ -72,7 +74,7 @@ class ChatbotViewSet(viewsets.ViewSet):
                 'sender': msg.sender,
                 'message': msg.message
             })
-
+        
         bot_response_text = self.brain.generate_response(
             analysis['intent'],
             analysis['entities'],
@@ -91,32 +93,52 @@ class ChatbotViewSet(viewsets.ViewSet):
         )
 
         # 7. Lier les recommandations au message
+        # Séparer les recommandations internes (model instances) et celles provenant du web (dicts)
         if recommendations:
-            # Séparer les recommandations de la base de données des recommandations web
-            db_recommendations = []
-            web_recommendations = []
+            web_results = []
+            local_hotels = []
+            local_flights = []
+            local_packages = []
 
             for rec in recommendations:
                 if isinstance(rec, dict):
-                    # C'est une recommandation web (dict)
-                    web_recommendations.append(rec)
+                    web_results.append(rec)
+                    continue
+
+                # modèles Django
+                if isinstance(rec, Hotel):
+                    local_hotels.append(rec)
+                elif isinstance(rec, Flight):
+                    local_flights.append(rec)
+                elif isinstance(rec, TourPackage):
+                    local_packages.append(rec)
                 else:
-                    # C'est un objet de la base de données (modèle Django)
-                    db_recommendations.append(rec)
+                    # si c'est un id numérique, on tente de récupérer l'objet selon l'intent
+                    try:
+                        if analysis['intent'] == 'search_hotel':
+                            local_hotels.append(Hotel.objects.get(id=int(rec)))
+                        elif analysis['intent'] == 'search_flight':
+                            local_flights.append(Flight.objects.get(id=int(rec)))
+                        elif analysis['intent'] == 'search_package':
+                            local_packages.append(TourPackage.objects.get(id=int(rec)))
+                    except Exception:
+                        # ignorer les éléments non valides
+                        pass
 
-            # Sauvegarder les recommandations web dans les entités
-            if web_recommendations:
-                bot_message.entities['web_recommendations'] = web_recommendations
+            if local_hotels:
+                bot_message.recommended_hotels.set(local_hotels)
+            if local_flights:
+                bot_message.recommended_flights.set(local_flights)
+            if local_packages:
+                bot_message.recommended_packages.set(local_packages)
+
+            # Stocker les résultats web directement dans le champ JSON 'entities'
+            if web_results:
+                entities = bot_message.entities or {}
+                entities['web_recommendations'] = web_results
+                bot_message.entities = entities
                 bot_message.save()
-
-            # Lier les recommandations de la base de données
-            if analysis['intent'] == 'search_hotel' and db_recommendations:
-                bot_message.recommended_hotels.set(db_recommendations)
-            elif analysis['intent'] == 'search_flight' and db_recommendations:
-                bot_message.recommended_flights.set(db_recommendations)
-            elif analysis['intent'] == 'search_package' and db_recommendations:
-                bot_message.recommended_packages.set(db_recommendations)
-
+        
         return Response({
             'session_id': conversation.session_id,
             'message': bot_response_text,
@@ -260,10 +282,14 @@ class ChatbotViewSet(viewsets.ViewSet):
                 'duration': package.duration_days,
                 'destination': package.destination.name,
             })
-
-        # Recommandations web (stockées dans les entités)
-        if 'web_recommendations' in message.entities:
-            for web_rec in message.entities['web_recommendations']:
-                recommendations.append(web_rec)
+        
+        # Ajouter aussi les recommandations provenant du web (stockées dans entities)
+        try:
+            web_recs = message.entities.get('web_recommendations', []) if message.entities else []
+            for rec in web_recs:
+                # rec est déjà un dict avec les champs attendus
+                recommendations.append(rec)
+        except Exception:
+            pass
 
         return recommendations

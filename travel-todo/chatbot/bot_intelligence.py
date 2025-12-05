@@ -8,6 +8,15 @@ import re
 from urllib.parse import quote_plus
 from django.db.models import Q
 from catalog.models import Hotel, Flight, TourPackage
+from urllib.parse import quote_plus
+
+# Import de l'intelligence Gemini
+try:
+    from .gemini_intelligence import GeminiChatbot
+    GEMINI_AVAILABLE = True
+except Exception as e:
+    print(f"⚠️ Gemini non disponible: {e}")
+    GEMINI_AVAILABLE = False
 
 # Import de l'intelligence Gemini
 try:

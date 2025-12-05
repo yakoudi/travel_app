@@ -59,6 +59,7 @@ export default function SearchSection() {
                     onChange={(e) =>
                       setSearchData({ ...searchData, checkIn: e.target.value })
                     }
+                    min={new Date().toISOString().split('T')[0]}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -77,6 +78,7 @@ export default function SearchSection() {
                     onChange={(e) =>
                       setSearchData({ ...searchData, checkOut: e.target.value })
                     }
+                    min={searchData.checkIn || new Date().toISOString().split('T')[0]}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>

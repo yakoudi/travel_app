@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Users, Check, Hotel, Plane, Utensils, User, Heart, Share2, Clock, Star } from 'lucide-react';
 import { packageAPI } from '../api/catalog';
@@ -48,7 +48,7 @@ export default function PackageDetailPage() {
             onClick={() => navigate('/search')}
             className="text-orange-600 hover:text-orange-700"
           >
-            Retour à la recherche
+            Retour ├á la recherche
           </button>
         </div>
       </div>
@@ -58,13 +58,13 @@ export default function PackageDetailPage() {
   const totalPrice = pkg.price * numParticipants;
 
   const inclusions = [
-    { key: 'includes_hotel', icon: Hotel, label: 'Hébergement en hôtel', description: `${pkg.duration_days} nuits incluses` },
-    { key: 'includes_flight', icon: Plane, label: 'Vols aller-retour', description: 'Au départ de Tunis' },
-    { key: 'includes_meals', icon: Utensils, label: 'Repas', description: 'Pension complète' },
-    { key: 'includes_guide', icon: User, label: 'Guide francophone', description: 'Tout au long du séjour' },
+    { key: 'includes_hotel', icon: Hotel, label: 'H├®bergement en h├┤tel', description: `${pkg.duration_days} nuits incluses` },
+    { key: 'includes_flight', icon: Plane, label: 'Vols aller-retour', description: 'Au d├®part de Tunis' },
+    { key: 'includes_meals', icon: Utensils, label: 'Repas', description: 'Pension compl├¿te' },
+    { key: 'includes_guide', icon: User, label: 'Guide francophone', description: 'Tout au long du s├®jour' },
   ];
 
-  // Parser l'itinéraire
+  // Parser l'itin├®raire
   const itineraryDays = pkg.itinerary.split('\n').filter(line => line.trim());
 
   return (
@@ -93,7 +93,7 @@ export default function PackageDetailPage() {
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center">
-              <span className="text-white text-8xl">🎒</span>
+              <span className="text-white text-8xl">­ƒÄÆ</span>
             </div>
           )}
           
@@ -138,7 +138,7 @@ export default function PackageDetailPage() {
             {/* Description */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                À propos de ce circuit
+                ├Ç propos de ce circuit
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                 {pkg.description}
@@ -172,10 +172,10 @@ export default function PackageDetailPage() {
               </div>
             </div>
 
-            {/* Itinéraire jour par jour */}
+            {/* Itin├®raire jour par jour */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Itinéraire détaillé
+                Itin├®raire d├®taill├®
               </h2>
               <div className="space-y-4">
                 {itineraryDays.map((day, index) => (
@@ -200,12 +200,12 @@ export default function PackageDetailPage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
-                  'Découverte des sites incontournables',
-                  'Hébergement en hôtels de qualité',
-                  'Groupe à taille humaine',
+                  'D├®couverte des sites incontournables',
+                  'H├®bergement en h├┤tels de qualit├®',
+                  'Groupe ├á taille humaine',
                   'Transport confortable inclus',
-                  'Guide expérimenté francophone',
-                  'Expériences authentiques',
+                  'Guide exp├®riment├® francophone',
+                  'Exp├®riences authentiques',
                 ].map((point, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -232,40 +232,41 @@ export default function PackageDetailPage() {
                   <Clock className="w-5 h-5 text-orange-600 mt-1" />
                   <div>
                     <p className="font-semibold">Rythme</p>
-                    <p className="text-sm">Modéré - Accessible à tous</p>
+                    <p className="text-sm">Mod├®r├® - Accessible ├á tous</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Star className="w-5 h-5 text-orange-600 mt-1" />
                   <div>
                     <p className="font-semibold">Niveau</p>
-                    <p className="text-sm">Convient aux familles et débutants</p>
+                    <p className="text-sm">Convient aux familles et d├®butants</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sidebar - Réservation */}
+          {/* Sidebar - R├®servation */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
               <div className="mb-6">
-                <p className="text-sm text-gray-500 mb-1">À partir de</p>
+                <p className="text-sm text-gray-500 mb-1">├Ç partir de</p>
                 <p className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
                   {formatPrice(pkg.price)}
                 </p>
                 <p className="text-gray-600">par personne</p>
               </div>
 
-              {/* Date de départ */}
+              {/* Date de d├®part */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date de départ
+                  Date de d├®part
                 </label>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
@@ -291,7 +292,7 @@ export default function PackageDetailPage() {
                 </p>
               </div>
 
-              {/* Récapitulatif du prix */}
+              {/* R├®capitulatif du prix */}
               <div className="bg-gradient-to-br from-orange-50 to-pink-50 rounded-lg p-4 mb-6">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Prix par personne</span>
@@ -299,7 +300,7 @@ export default function PackageDetailPage() {
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Participants</span>
-                  <span className="font-semibold">×{numParticipants}</span>
+                  <span className="font-semibold">├ù{numParticipants}</span>
                 </div>
                 <div className="border-t border-orange-200 pt-2 mt-2">
                   <div className="flex justify-between">
@@ -315,21 +316,21 @@ export default function PackageDetailPage() {
                 onClick={() => navigate(`/booking/package/${pkg.id}`)}
                 className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all font-semibold text-lg mb-4 shadow-lg"
               >
-                Réserver ce circuit
+                R├®server ce circuit
               </button>
 
               <div className="space-y-2 text-sm text-gray-600">
                 <p className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-600" />
-                  Confirmation immédiate
+                  Confirmation imm├®diate
                 </p>
                 <p className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-600" />
-                  Annulation gratuite jusqu'à 7 jours avant
+                  Annulation gratuite jusqu'├á 7 jours avant
                 </p>
                 <p className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-green-600" />
-                  Paiement sécurisé
+                  Paiement s├®curis├®
                 </p>
               </div>
 

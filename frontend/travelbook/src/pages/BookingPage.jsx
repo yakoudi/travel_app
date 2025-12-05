@@ -22,6 +22,10 @@ export default function BookingPage() {
     start_date: location.state?.checkIn || '',
     end_date: location.state?.checkOut || '',
     num_guests: location.state?.guests || 1,
+    room_type: location.state?.roomType || 'standard',
+    room_price: location.state?.roomPrice || 0,
+    total_price: location.state?.totalPrice || 0,
+    number_of_nights: location.state?.numberOfNights || 0,
     special_requests: '',
   });
 
@@ -93,7 +97,10 @@ export default function BookingPage() {
   };
 
   const getUnitPrice = () => {
-    if (type === 'hotel') return item.price_per_night;
+    // Pour les hôtels, utiliser le prix de la chambre si disponible
+    if (type === 'hotel') {
+      return formData.room_price || item.price_per_night;
+    }
     if (type === 'flight') return item.price;
     if (type === 'package') return item.price;
     return 0;
@@ -160,14 +167,14 @@ export default function BookingPage() {
                 )}
                 {type === 'flight' && (
                   <>
-                    <p>✈️ {item.origin_name} → {item.destination_name}</p>
-                    <p>⏱️ Durée: {item.duration}</p>
+                    <p>Ô£ê´©Å {item.origin_name} ÔåÆ {item.destination_name}</p>
+                    <p>ÔÅ▒´©Å Durée: {item.duration}</p>
                   </>
                 )}
                 {type === 'package' && (
                   <>
                     <p>📍 {item.destination_name}</p>
-                    <p>📅 {item.duration_days} jours</p>
+                    <p>­ƒôà {item.duration_days} jours</p>
                   </>
                 )}
               </div>
@@ -186,6 +193,7 @@ export default function BookingPage() {
                     type="date"
                     value={formData.start_date}
                     onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
@@ -200,6 +208,7 @@ export default function BookingPage() {
                     type="date"
                     value={formData.end_date}
                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                    min={formData.start_date || new Date().toISOString().split('T')[0]}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
@@ -222,6 +231,25 @@ export default function BookingPage() {
                   </select>
                 </div>
 
+                {/* Type de chambre (uniquement pour les hôtels) */}
+                {type === 'hotel' && formData.room_type && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Type de chambre
+                    </label>
+                    <select
+                      value={formData.room_type}
+                      onChange={(e) => setFormData({ ...formData, room_type: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="standard">Chambre Standard</option>
+                      <option value="deluxe">Chambre Deluxe</option>
+                      <option value="suite">Suite</option>
+                      <option value="family">Chambre Familiale</option>
+                    </select>
+                  </div>
+                )}
+
                 {/* Demandes spéciales */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -238,22 +266,49 @@ export default function BookingPage() {
 
                 {/* Résumé du prix */}
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-700">Prix unitaire</span>
-                    <span className="font-semibold">{formatPrice(getUnitPrice())}</span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-700">Participants</span>
-                    <span className="font-semibold">×{formData.num_guests}</span>
-                  </div>
-                  <div className="border-t border-blue-200 pt-2 mt-2">
-                    <div className="flex justify-between">
-                      <span className="text-lg font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-blue-600">
-                        {formatPrice(getTotalPrice())}
-                      </span>
-                    </div>
-                  </div>
+                  {type === 'hotel' && formData.number_of_nights > 0 ? (
+                    <>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-700">Prix par nuit</span>
+                        <span className="font-semibold">{formatPrice(formData.room_price)}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-700">Nombre de nuits</span>
+                        <span className="font-semibold">×{formData.number_of_nights}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-700">Participants</span>
+                        <span className="font-semibold">×{formData.num_guests}</span>
+                      </div>
+                      <div className="border-t border-blue-200 pt-2 mt-2">
+                        <div className="flex justify-between">
+                          <span className="text-lg font-bold text-gray-900">Total</span>
+                          <span className="text-2xl font-bold text-blue-600">
+                            {formatPrice(formData.total_price)}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-700">Prix unitaire</span>
+                        <span className="font-semibold">{formatPrice(getUnitPrice())}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-700">Participants</span>
+                        <span className="font-semibold">×{formData.num_guests}</span>
+                      </div>
+                      <div className="border-t border-blue-200 pt-2 mt-2">
+                        <div className="flex justify-between">
+                          <span className="text-lg font-bold text-gray-900">Total</span>
+                          <span className="text-2xl font-bold text-blue-600">
+                            {formatPrice(getTotalPrice())}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Bouton de soumission */}

@@ -146,45 +146,11 @@ export default function Chatbot() {
         className={`bg-white border-2 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all ${isWebResult ? "border-green-200 bg-green-50" : "border-blue-200"
           }`}
       >
-        <div className="flex items-start gap-3">
-          {rec.image && (
-            <img
-              src={rec.image}
-              alt={rec.name}
-              className="w-16 h-16 object-cover rounded-lg"
-            />
-          )}
-          <div className="flex-1">
-            <h4 className="font-bold text-gray-900 text-sm mb-1">{rec.name}</h4>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              {rec.type === 'hotel' && (
-                <>
-                  <span>⭐ {rec.stars}</span>
-                  <span>•</span>
-                  <span>{rec.destination}</span>
-                </>
-              )}
-              {rec.type === 'flight' && (
-                <>
-                  <span>{rec.origin} → {rec.destination}</span>
-                  <span>•</span>
-                  <span>{rec.duration}</span>
-                </>
-              )}
-              {rec.type === 'package' && (
-                <>
-                  <span>{rec.duration} jours</span>
-                  <span>•</span>
-                  <span>{rec.destination}</span>
-                </>
-              )}
-            </div>
-            <p className="text-blue-600 font-bold mt-1">
-              {formatPrice(rec.price)}
-              {rec.type === 'hotel' && <span className="text-xs text-gray-500">/nuit</span>}
-            </p>
-          </div>
-        </div>
+        <h4 className="font-bold text-sm">{rec.name}</h4>
+        <p className="text-xs text-gray-600">{rec.destination}</p>
+        <p className="text-blue-600 font-bold mt-1">
+          {formatPrice(rec.price)}
+        </p>
       </div>
     );
   };

@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = 'Créer un administrateur prédéfini'
 
     def handle(self, *args, **kwargs):
-        admin_email = config('ADMIN_EMAIL', default='admin@traveltodo.com')
+        admin_email = config('ADMIN_EMAIL', default='admin@saferni.com')
         admin_password = config('ADMIN_PASSWORD', default='Admin@123456')
         
         # Vérifier si l'admin existe déjà
@@ -23,7 +23,7 @@ class Command(BaseCommand):
             email=admin_email,
             password=admin_password,
             first_name='Admin',
-            last_name='Travel Todo'
+            last_name='Saferni'
         )
         
         self.stdout.write(

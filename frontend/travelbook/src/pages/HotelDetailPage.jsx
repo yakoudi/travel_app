@@ -12,6 +12,10 @@ export default function HotelDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [checkInDate, setCheckInDate] = useState('');
+  const [checkOutDate, setCheckOutDate] = useState('');
+  const [roomType, setRoomType] = useState('standard');
+  const [numGuests, setNumGuests] = useState(2);
 
   useEffect(() => {
     loadHotel();
@@ -29,6 +33,39 @@ export default function HotelDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Calculer le prix selon le type de chambre
+  const getRoomPrice = () => {
+    if (!hotel) return 0;
+    const basePrice = hotel.price_per_night;
+    
+    // Multiplicateurs de prix selon le type de chambre
+    const priceMultipliers = {
+      'standard': 1,      // Prix de base
+      'deluxe': 1.3,      // +30%
+      'suite': 1.8,       // +80%
+      'family': 1.5       // +50%
+    };
+    
+    return basePrice * (priceMultipliers[roomType] || 1);
+  };
+
+  // Calculer le nombre de nuits
+  const getNumberOfNights = () => {
+    if (!checkInDate || !checkOutDate) return 0;
+    const start = new Date(checkInDate);
+    const end = new Date(checkOutDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Calculer le prix total (prix par nuit × nombre de nuits)
+  const getTotalPrice = () => {
+    const nights = getNumberOfNights();
+    const pricePerNight = getRoomPrice();
+    return nights * pricePerNight;
   };
 
   const amenities = [
@@ -227,6 +264,9 @@ export default function HotelDetailPage() {
                   </label>
                   <input
                     type="date"
+                    value={checkInDate}
+                    onChange={(e) => setCheckInDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -237,24 +277,83 @@ export default function HotelDetailPage() {
                   </label>
                   <input
                     type="date"
+                    value={checkOutDate}
+                    onChange={(e) => setCheckOutDate(e.target.value)}
+                    min={checkInDate || new Date().toISOString().split('T')[0]}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre de chambres
+                    Type de chambre
                   </label>
-                  <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="1">1 chambre</option>
-                    <option value="2">2 chambres</option>
-                    <option value="3">3 chambres</option>
+                  <select 
+                    value={roomType}
+                    onChange={(e) => setRoomType(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="standard">Chambre Standard - {formatPrice(hotel.price_per_night)}</option>
+                    <option value="deluxe">Chambre Deluxe - {formatPrice(hotel.price_per_night * 1.3)}</option>
+                    <option value="suite">Suite - {formatPrice(hotel.price_per_night * 1.8)}</option>
+                    <option value="family">Chambre Familiale - {formatPrice(hotel.price_per_night * 1.5)}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre de participants
+                  </label>
+                  <select 
+                    value={numGuests}
+                    onChange={(e) => setNumGuests(parseInt(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((num) => (
+                      <option key={num} value={num}>{num} {num > 1 ? 'personnes' : 'personne'}</option>
+                    ))}
                   </select>
                 </div>
               </div>
 
+              {/* Affichage du prix calculé */}
+              <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-700">Prix par nuit</span>
+                  <span className="font-semibold text-blue-600">{formatPrice(getRoomPrice())}</span>
+                </div>
+                {getNumberOfNights() > 0 && (
+                  <>
+                    <div className="flex justify-between mb-2 text-sm">
+                      <span className="text-gray-600">Nombre de nuits</span>
+                      <span className="text-gray-800">×{getNumberOfNights()}</span>
+                    </div>
+                    <div className="border-t border-blue-200 pt-2 mt-2">
+                      <div className="flex justify-between">
+                        <span className="text-lg font-bold text-gray-900">Prix total</span>
+                        <span className="text-2xl font-bold text-blue-600">{formatPrice(getTotalPrice())}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-between text-sm text-gray-600 mt-2">
+                  <span>Type: {roomType === 'standard' ? 'Standard' : roomType === 'deluxe' ? 'Deluxe' : roomType === 'suite' ? 'Suite' : 'Familiale'}</span>
+                  <span>{numGuests} {numGuests > 1 ? 'personnes' : 'personne'}</span>
+                </div>
+              </div>
+
               <button 
-                onClick={() => navigate(`/booking/hotel/${hotel.id}`)}
+                onClick={() => navigate(`/booking/hotel/${hotel.id}`, {
+                  state: {
+                    checkIn: checkInDate,
+                    checkOut: checkOutDate,
+                    roomType: roomType,
+                    guests: numGuests,
+                    roomPrice: getRoomPrice(),
+                    totalPrice: getTotalPrice(),
+                    numberOfNights: getNumberOfNights()
+                  }
+                })}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg"
               >
                 Réserver maintenant

@@ -90,7 +90,7 @@ const AdminRoute = ({ children }) => {
 
 // Composant pour rediriger si déjà connecté
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -100,7 +100,14 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  return !isAuthenticated ? children : <Navigate to="/" />;
+  if (isAuthenticated) {
+    if (user?.role === 'admin') {
+      return <Navigate to="/admin" />;
+    }
+    return <Navigate to="/" />;
+  }
+
+  return children;
 };
 
 // Page d'accueil avec tous les composants

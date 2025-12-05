@@ -1,0 +1,218 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+
+' ============================================
+' PACKAGE USERS
+' ============================================
+package users {
+    abstract class User {
+        # id: Integer
+        # email: String
+        # password: String
+        # first_name: String
+        # last_name: String
+        # phone: String
+        # is_active: Boolean
+        # date_joined: DateTime
+        --
+        + get_role(): String
+        + get_full_name(): String
+    }
+
+    class Client {
+        - loyalty_points: Integer
+        - preferred_language: String
+        - date_of_birth: Date
+        - passport_number: String
+        - nationality: String
+        --
+        + add_loyalty_points(): void
+        + get_total_bookings(): Integer
+    }
+
+    class Admin {
+        - department: String
+        - permissions_level: Integer
+        - employee_id: String
+        - hire_date: Date
+        --
+        + can_manage(): Boolean
+        + get_managed_hotels(): List
+    }
+}
+
+' ============================================
+' PACKAGE CATALOG
+' ============================================
+package catalog {
+    class Destination {
+        - id: Integer
+        - name: String
+        - country: String
+        - description: Text
+        - image: ImageField
+        - is_popular: Boolean
+        - created_at: DateTime
+        --
+        + get_hotels_count(): Integer
+    }
+
+    class Hotel {
+        - id: Integer
+        - name: String
+        - description: Text
+        - address: String
+        - stars: Integer
+        - price_per_night: Decimal
+        - has_wifi: Boolean
+        - has_pool: Boolean
+        - has_parking: Boolean
+        - has_restaurant: Boolean
+        - has_spa: Boolean
+        - is_available: Boolean
+        - total_rooms: Integer
+        - average_rating: Decimal
+        --
+        + calculate_price(): Decimal
+        + get_available_rooms(): Integer
+    }
+
+    class HotelImage {
+        - id: Integer
+        - image: ImageField
+        - caption: String
+        - uploaded_at: DateTime
+    }
+
+    class Flight {
+        - id: Integer
+        - airline: String
+        - flight_number: String
+        - departure_time: DateTime
+        - arrival_time: DateTime
+        - price: Decimal
+        - available_seats: Integer
+        - is_direct: Boolean
+        --
+        + duration(): String
+    }
+
+    class TourPackage {
+        - id: Integer
+        - name: String
+        - description: Text
+        - duration_days: Integer
+        - price: Decimal
+        - includes_hotel: Boolean
+        - includes_flight: Boolean
+        - max_participants: Integer
+        --
+        + get_available_spots(): Integer
+    }
+
+    class Promotion {
+        - id: Integer
+        - code: String
+        - discount_type: String
+        - discount_value: Decimal
+        - start_date: DateTime
+        - end_date: DateTime
+        - is_active: Boolean
+        --
+        + is_valid(): Boolean
+        + apply_discount(): Decimal
+    }
+}
+
+' ============================================
+' PACKAGE BOOKINGS
+' ============================================
+package bookings {
+    class Booking {
+        - id: Integer
+        - booking_number: String
+        - booking_type: String
+        - start_date: Date
+        - end_date: Date
+        - num_guests: Integer
+        - room_type: String
+        - number_of_nights: Integer
+        - room_price_per_night: Decimal
+        - unit_price: Decimal
+        - total_price: Decimal
+        - status: String
+        - payment_status: String
+        --
+        + calculate_total_price(): Decimal
+        + can_cancel(): Boolean
+    }
+
+    class Payment {
+        - id: Integer
+        - amount: Decimal
+        - payment_method: String
+        - transaction_id: String
+        - payment_date: DateTime
+        - is_successful: Boolean
+        --
+        + process_payment(): Boolean
+    }
+
+    class Review {
+        - id: Integer
+        - rating: Integer
+        - comment: Text
+        - created_at: DateTime
+        - is_verified: Boolean
+        --
+        + can_edit(): Boolean
+    }
+}
+
+' ============================================
+' HERITAGE
+' ============================================
+User <|-- Client
+User <|-- Admin
+
+' ============================================
+' RELATIONS CLIENT
+' ============================================
+Client "1" --> "0..*" Booking
+Client "1" --> "0..*" Review
+
+' ============================================
+' RELATIONS ADMIN
+' ============================================
+Admin "1" --> "0..*" Hotel
+Admin "1" --> "0..*" Promotion
+
+' ============================================
+' RELATIONS DESTINATION
+' ============================================
+Destination "1" --> "0..*" Hotel
+Destination "1" --> "0..*" Flight
+Destination "1" --> "0..*" TourPackage
+
+' ============================================
+' RELATIONS HOTEL
+' ============================================
+Hotel "1" --> "0..*" HotelImage
+Hotel "1" --> "0..*" Booking
+Hotel "1" --> "0..*" Review
+
+' ============================================
+' RELATIONS FLIGHT ET PACKAGE
+' ============================================
+Flight "1" --> "0..*" Booking
+TourPackage "1" --> "0..*" Booking
+TourPackage "1" --> "0..*" Review
+
+' ============================================
+' RELATIONS BOOKING
+' ============================================
+Booking "1" --> "0..1" Payment
+Booking "0..*" --> "0..1" Promotion
+
+@enduml
