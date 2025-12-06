@@ -126,14 +126,29 @@ export default function Chatbot() {
 
   // Card de recommandations
   const RecommendationCard = ({ rec }) => {
-    const isWebResult = rec?.source?.includes("Web");
+    // Détecter si c'est un résultat web (tous les sites de réservation/vol)
+    // Vérifie si source_url existe (indicateur fiable qu'c'est un lien externe)
+    const isWebResult = rec?.source_url || (rec?.source && (
+      rec.source.includes("Web") || 
+      rec.source.includes("Booking") || 
+      rec.source.includes("Expedia") || 
+      rec.source.includes("Hotels.com") || 
+      rec.source.includes("Agoda") || 
+      rec.source.includes("Trivago") ||
+      rec.source.includes("Google Flights") ||
+      rec.source.includes("Skyscanner") ||
+      rec.source.includes("Kayak") ||
+      rec.source.includes("Momondo") ||
+      rec.source.includes("Kiwi")
+    ));
 
     const handleClick = () => {
-      if (isWebResult) {
-        const url = rec.source_url || "https://www.google.com";
-        window.open(url, "_blank");
+      if (isWebResult && rec.source_url) {
+        // Si c'est un résultat web avec URL, l'ouvrir directement
+        window.open(rec.source_url, "_blank");
         return;
       }
+      // Sinon, c'est un résultat local — le naviguer
       setIsMinimized(true);
       navigate(`/${rec.type}s/${rec.id}`);
     };
@@ -143,14 +158,68 @@ export default function Chatbot() {
     return (
       <div
         onClick={handleClick}
-        className={`bg-white border-2 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all ${isWebResult ? "border-green-200 bg-green-50" : "border-blue-200"
+        className={`bg-white border-2 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-all ${isWebResult ? "border-green-500 bg-green-50 hover:bg-green-100" : "border-blue-200 hover:border-blue-400"
           }`}
       >
-        <h4 className="font-bold text-sm">{rec.name}</h4>
-        <p className="text-xs text-gray-600">{rec.destination}</p>
-        <p className="text-blue-600 font-bold mt-1">
-          {formatPrice(rec.price)}
-        </p>
+        {rec.image && (
+          <img 
+            src={rec.image} 
+            alt={rec.name}
+            className="w-full h-32 object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div className="p-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1">
+              <h4 className="font-bold text-sm text-gray-900">{rec.name}</h4>
+              <p className="text-xs text-gray-600 mt-1">{rec.destination || rec.origin}</p>
+              {rec.stars && (
+                <div className="flex items-center gap-1 mt-1">
+                  <span className="text-yellow-500 text-xs">{"★".repeat(rec.stars)}</span>
+                  {rec.rating && (
+                    <span className="text-xs text-gray-500 ml-1">({rec.rating.toFixed(1)})</span>
+                  )}
+                </div>
+              )}
+              {isWebResult && (rec.price === null || rec.price === undefined) ? (
+                <div className="mt-2">
+                  {rec.price_range_min && rec.price_range_max ? (
+                    <div>
+                      <p className="text-green-600 font-bold text-base">
+                        {formatPrice(rec.price_range_min)} - {formatPrice(rec.price_range_max)}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">par nuit (compatible avec votre budget)</p>
+                    </div>
+                  ) : (
+                    <p className="text-green-600 font-semibold text-sm">
+                      {rec.price_display || 'Voir les prix sur Booking.com'}
+                    </p>
+                  )}
+                </div>
+              ) : rec.price ? (
+                <p className="text-blue-600 font-bold mt-2 text-base">
+                  {formatPrice(rec.price)}
+                </p>
+              ) : null}
+            </div>
+            {isWebResult && (
+              <div className="flex flex-col items-end">
+                <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-semibold">
+                  {rec.source || 'Réservation'}
+                </span>
+                <span className="text-xs text-green-600 mt-1 font-medium">
+                  Comparer les prix →
+                </span>
+              </div>
+            )}
+          </div>
+          {rec.description && (
+            <p className="text-xs text-gray-500 mt-2 italic">{rec.description}</p>
+          )}
+        </div>
       </div>
     );
   };

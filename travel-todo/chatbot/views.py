@@ -54,10 +54,20 @@ class ChatbotViewSet(viewsets.ViewSet):
             message=message_text
         )
 
-        # 3. Analyser le message
-        analysis = self.brain.analyze_message(message_text)
+        # 3. Récupérer l'historique de conversation (une seule fois)
+        conversation_history = []
+        previous_messages = conversation.messages.all().order_by('-timestamp')[:10]
+        for msg in reversed(list(previous_messages)):
+            conversation_history.append({
+                'sender': msg.sender,
+                'message': msg.message,
+                'entities': msg.entities if msg.sender == 'bot' else None
+            })
         
-        # 4. Obtenir des recommandations (interne + web)
+        # 4. Analyser le message avec l'historique
+        analysis = self.brain.analyze_message(message_text, conversation_history)
+        
+        # 5. Obtenir des recommandations (interne + web)
         recommendations = self.brain.get_recommendations(
             analysis['intent'],
             analysis['entities'],
@@ -65,15 +75,34 @@ class ChatbotViewSet(viewsets.ViewSet):
             search_web=True  # Activer la recherche web
         )
 
-        # 5. Générer la réponse du bot
-        # Récupérer l'historique de conversation
-        conversation_history = []
-        previous_messages = conversation.messages.all().order_by('-timestamp')[:5]
-        for msg in reversed(list(previous_messages)):
-            conversation_history.append({
-                'sender': msg.sender,
-                'message': msg.message
-            })
+        # Fallback supplémentaire : si aucune recommandation et que le message
+        # ou les entités indiquent une recherche d'hôtel ou de vol, forcer une recherche web
+        if not recommendations:
+            msg_lower = message_text.lower() if message_text else ''
+            wants_hotel = 'hotel' in msg_lower or 'hôtel' in msg_lower or 'chambre' in msg_lower
+            wants_flight = 'vol' in msg_lower or 'avion' in msg_lower or 'billet' in msg_lower
+            has_destination = bool(analysis.get('entities') and analysis['entities'].get('destination'))
+
+            # Préparer des entités adaptées pour la recherche web (destination en string si nécessaire)
+            entities_for_search = analysis.get('entities', {}).copy() if analysis.get('entities') else {}
+            dest_info = entities_for_search.get('destination')
+            if isinstance(dest_info, dict):
+                # convertir en nom lisible pour la recherche web
+                entities_for_search['destination'] = dest_info.get('name') or ''
+
+            try:
+                if wants_hotel or (has_destination and analysis.get('intent') == 'search_hotel'):
+                    web_fallback = self.brain._search_web('search_hotel', entities_for_search, 3)
+                    if web_fallback:
+                        recommendations = web_fallback
+                elif wants_flight or (has_destination and analysis.get('intent') == 'search_flight'):
+                    web_fallback = self.brain._search_web('search_flight', entities_for_search, 3)
+                    if web_fallback:
+                        recommendations = web_fallback
+            except Exception:
+                pass
+
+        # 6. Générer la réponse du bot avec l'historique
         
         bot_response_text = self.brain.generate_response(
             analysis['intent'],
@@ -83,13 +112,17 @@ class ChatbotViewSet(viewsets.ViewSet):
             conversation_history=conversation_history
         )
 
-        # 6. Sauvegarder la réponse du bot
+        # 6. Sauvegarder la réponse du bot avec l'intent et les entités
+        # Stocker l'intent dans les entités pour pouvoir le récupérer plus tard
+        bot_entities = analysis['entities'].copy() if analysis.get('entities') else {}
+        bot_entities['intent'] = analysis['intent']  # Stocker l'intent pour la mémoire
+        
         bot_message = ChatMessage.objects.create(
             conversation=conversation,
             sender='bot',
             message=bot_response_text,
             intent=analysis['intent'],
-            entities=analysis['entities']
+            entities=bot_entities
         )
 
         # 7. Lier les recommandations au message
