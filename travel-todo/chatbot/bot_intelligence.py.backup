@@ -14,7 +14,7 @@ try:
     from .gemini_intelligence import GeminiChatbot
     GEMINI_AVAILABLE = True
 except Exception as e:
-    print(f"⚠️ Gemini non disponible: {e}")
+    print(f"Gemini non disponible: {e}")
     GEMINI_AVAILABLE = False
 
 

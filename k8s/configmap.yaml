@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+data:
+  # Configuration de la base de données
+  db_host: "postgres-service"
+  db_name: "travel_todo_db"
+  db_user: "postgres"
+  db_port: "5432"
+  
+  # Configuration de l'application
+  app_env: "production"
+  debug: "False"
+  
+  # Configuration du backend
+  backend_url: "http://travel-backend-service:8000"
+  
+  # Configuration du frontend
+  frontend_url: "http://travel-frontend-service:3000"

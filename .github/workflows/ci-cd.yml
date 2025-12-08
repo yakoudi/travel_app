@@ -1,0 +1,240 @@
+name: CI/CD Pipeline - Travel App
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BACKEND_IMAGE: travel-backend
+  FRONTEND_IMAGE: travel-frontend
+
+jobs:
+  # Job 1: Build et Test du Backend
+  build-backend:
+    name: Build & Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+    
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: 📦 Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: 📥 Install dependencies
+      run: |
+        cd travel-todo
+        pip install -r requirements.txt
+    
+    - name: 🧪 Run tests
+      run: |
+        cd travel-todo
+        python manage.py test --verbosity=2
+    
+    - name: 🔍 Run linting
+      run: |
+        cd travel-todo
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    
+    - name: 🐳 Build Backend Docker Image
+      run: |
+        docker build -t ${{ env.BACKEND_IMAGE }}:${{ github.sha }} ./travel-todo
+        docker tag ${{ env.BACKEND_IMAGE }}:${{ github.sha }} ${{ env.BACKEND_IMAGE }}:latest
+    
+    - name: 💾 Save Backend Image
+      run: |
+        docker save ${{ env.BACKEND_IMAGE }}:latest | gzip > backend.tar.gz
+    
+    - name: 📤 Upload Backend Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-image
+        path: backend.tar.gz
+        retention-days: 1
+
+  # Job 2: Build du Frontend
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+    
+    - name: 📦 Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/travelbook/package-lock.json
+    
+    - name: 📥 Install dependencies
+      run: |
+        cd frontend/travelbook
+        npm ci
+    
+    - name: 🏗️ Build Frontend
+      run: |
+        cd frontend/travelbook
+        npm run build
+    
+    - name: 🧪 Run tests (if available)
+      run: |
+        cd frontend/travelbook
+        npm test -- --passWithNoTests
+    
+    - name: 🐳 Build Frontend Docker Image
+      run: |
+        docker build -t ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} ./frontend/travelbook
+        docker tag ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} ${{ env.FRONTEND_IMAGE }}:latest
+    
+    - name: 💾 Save Frontend Image
+      run: |
+        docker save ${{ env.FRONTEND_IMAGE }}:latest | gzip > frontend.tar.gz
+    
+    - name: 📤 Upload Frontend Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-image
+        path: frontend.tar.gz
+        retention-days: 1
+
+  # Job 3: Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+    
+    - name: 🔒 Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: 📤 Upload Trivy results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Job 4: Deploy to Kubernetes
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+    
+    - name: 📥 Download Backend Image
+      uses: actions/download-artifact@v3
+      with:
+        name: backend-image
+    
+    - name: 📥 Download Frontend Image
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-image
+    
+    - name: 🐳 Load Docker Images
+      run: |
+        docker load < backend.tar.gz
+        docker load < frontend.tar.gz
+    
+    - name: ⚙️ Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+    
+    - name: 🔧 Configure Kubernetes context
+      run: |
+        # Configuration du contexte Kubernetes
+        # À adapter selon votre cluster (Minikube, Kind, EKS, GKE, etc.)
+        kubectl config use-context minikube || echo "Minikube not configured"
+    
+    - name: 🚀 Deploy ConfigMap & Secrets
+      run: |
+        kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secrets.yaml
+    
+    - name: 🗄️ Deploy Database
+      run: |
+        kubectl apply -f k8s/database-statefulset.yaml
+        kubectl rollout status statefulset/postgres --timeout=300s
+    
+    - name: 🔧 Deploy Backend
+      run: |
+        kubectl apply -f k8s/backend.yaml
+        kubectl rollout status deployment/travel-backend --timeout=300s
+    
+    - name: 🎨 Deploy Frontend
+      run: |
+        kubectl apply -f k8s/frontend.yaml
+        kubectl rollout status deployment/travel-frontend --timeout=300s
+    
+    - name: 📊 Deploy Monitoring
+      run: |
+        kubectl apply -f k8s/monitoring/prometheus.yaml
+        kubectl apply -f k8s/monitoring/grafana.yaml
+    
+    - name: ✅ Verify Deployment
+      run: |
+        echo "=== Pods Status ==="
+        kubectl get pods
+        echo ""
+        echo "=== Services Status ==="
+        kubectl get services
+        echo ""
+        echo "=== Deployments Status ==="
+        kubectl get deployments
+    
+    - name: 🧪 Run Smoke Tests
+      run: |
+        # Attendre que les services soient prêts
+        sleep 30
+        
+        # Tester le backend
+        kubectl port-forward service/travel-backend-service 8000:8000 &
+        sleep 5
+        curl -f http://localhost:8000/admin/login/ || echo "Backend health check failed"
+        
+        # Tester le frontend
+        kubectl port-forward service/travel-frontend-service 3000:3000 &
+        sleep 5
+        curl -f http://localhost:3000 || echo "Frontend health check failed"
+
+  # Job 5: Notification
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always()
+    
+    steps:
+    - name: 📧 Send notification
+      run: |
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+        fi

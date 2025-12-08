@@ -27,8 +27,8 @@ class GeminiChatbot:
             print("[WARNING] Cle API Gemini manquante ou invalide")
             self.api_key = None
             
-        # URL de l'API Gemini (Model: gemini-2.0-flash pour la rapidité et performance)
-        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+        # URL de l'API Gemini (Model: gemini-1.5-flash pour la rapidité et performance)
+        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
         
         # Contexte du chatbot
@@ -40,13 +40,10 @@ Ton rôle:
 - Aider avec les hôtels, vols et circuits
 - Comprendre les besoins implicites
 - Être tolérant aux fautes de frappe
-- PARLER LA LANGUE DE L'UTILISATEUR (Français, Arabe, Anglais)
-- Si l'utilisateur parle en Arabe (ou Darija), réponds en Arabe.
-- Si l'utilisateur parle en Français, réponds en Français.
 
 Format de réponse attendu (JSON) pour l'analyse:
 {
-    "intent": "search_hotel|search_flight|search_package|greeting|help|thanks|general_question|language_switch|unknown",
+    "intent": "search_hotel|search_flight|search_package|greeting|help|thanks|general_question|unknown",
     "entities": {
         "destination": "ville/pays",
         "budget": nombre (TND),
@@ -132,7 +129,6 @@ Format de réponse attendu (JSON) pour l'analyse:
         try:
             prompt = f"""
 Tu es TravelTodo Assistant. Réponds de manière naturelle, chaleureuse et utile.
-IMPORTANT: Réponds TOUJOURS dans la même langue que l'utilisateur (Français, Arabe, ou Anglais).
 Ne donne PAS de JSON, juste du texte brut.
 Sois concis (2-3 phrases).
 
@@ -177,7 +173,7 @@ Message utilisateur: {user_message}
     def _fallback_analysis(self, user_message):
         """Fallback simple"""
         msg = user_message.lower()
-        if any(w in msg for w in ['bonjour', 'salut', 'alut', 'slt', 'hello', 'coucou']):
+        if any(w in msg for w in ['bonjour', 'salut']):
             return {'intent': 'greeting', 'response': 'Bonjour ! Où souhaitez-vous partir ?', 'entities': {}, 'confidence': 1.0}
         return {'intent': 'unknown', 'response': 'Je peux vous aider à trouver des hôtels ou des vols.', 'entities': {}, 'confidence': 0.5}
 
