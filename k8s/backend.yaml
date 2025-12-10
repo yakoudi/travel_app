@@ -2,8 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: travel-backend
+  labels:
+    app: travel-backend
 spec:
-  replicas: 1
+  replicas: 2  # Haute disponibilité
   selector:
     matchLabels:
       app: travel-backend
@@ -11,6 +13,10 @@ spec:
     metadata:
       labels:
         app: travel-backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
       - name: travel-backend
@@ -18,15 +24,56 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8000
+          name: http
         env:
         - name: DB_HOST
-          value: "host.docker.internal"
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: db_host
         - name: DB_NAME
-          value: "travel_todo_db"
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: db_name
         - name: DB_USER
-          value: "postgres"
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: db_user
         - name: DB_PASSWORD
-          value: "postgres"
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: db_password
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: django_secret_key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /admin/login/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /admin/login/
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service

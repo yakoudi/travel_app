@@ -5,21 +5,21 @@ $files = @(
 )
 
 $replacements = @{
-    'R├®server' = 'Réserver'
-    'h├┤tel' = 'hôtel'
-    '├®l├®ment' = 'élément'
-    '├®toiles' = 'étoiles'
-    'd├®but' = 'début'
-    'sp├®ciales' = 'spéciales'
-    'H├┤tel' = 'Hôtel'
-    '├á' = 'à'
-    'arriv├®e' = 'arrivée'
-    'd├®part' = 'départ'
-    '├ëquipements' = 'Équipements'
-    'imm├®diate' = 'immédiate'
-    '├Ç' = 'À'
-    'Ô£ô' = '✓'
-    'En-t├¬te' = 'En-tête'
+    'reserver' = 'Réserver'
+    'hotel' = 'hôtel'
+    'element' = 'élément'
+    'etoiles' = 'étoiles'
+    'but' = 'début'
+    'speciales' = 'spéciales'
+    'hotel' = 'Hôtel'
+    'á' = 'à'
+    'arrivée' = 'arrivée'
+    'départ' = 'départ'
+       'immédiat' = 'immédiate'
+    'Ç' = 'À'
+    'Ô' = '✓'
+    'En-tête' = 'En-tête'
+
 }
 
 foreach ($file in $files) {

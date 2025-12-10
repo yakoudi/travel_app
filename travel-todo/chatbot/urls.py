@@ -5,7 +5,7 @@ from .views import ChatbotViewSet
 app_name = 'chatbot'
 
 router = DefaultRouter()
-router.register('', ChatbotViewSet, basename='chatbot')
+router.register('chatbot', ChatbotViewSet, basename='chatbot')
 
 urlpatterns = [
     path('', include(router.urls)),
